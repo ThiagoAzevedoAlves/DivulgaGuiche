@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -37,33 +38,46 @@ public class MiniFrame extends javax.swing.JFrame {
     String tipo;
     int ultimo = 0;
     public static Timer timer = new Timer(3000, null);
+    public URL url;
+    public QName qname;
+    public Service service;
+    public server s;
     
     public MiniFrame(int guiche, String tipo) {
-        this.guiche = guiche;
-        this.tipo = tipo;
-        initComponents();
-        this.setSize(350, 290);
-        //fundo------------------------------------------------------------------------------------//
-        BufferedImage resizedImg = new BufferedImage(1280, 768, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = resizedImg.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(new ImageIcon(getClass().getResource("/rec/painel1.png")).getImage(), 0, 0, 1280, 768, null);
-        g.dispose();
-        
-        jLfundo.setIcon(new javax.swing.ImageIcon(resizedImg));
-        //-----------------------------------------------------------------------------------------//
-        
-        this.jLguiche.setText("#"+Integer.toString(guiche));
-        this.jLtipo.setText(tipo);
-        if(tipo.compareTo("Registros")==0){
-            timer.addActionListener(FilaReg);            
-        }else{
-            timer.addActionListener(FilaCert);
+        try {
+            this.guiche = guiche;
+            this.tipo = tipo;
+            initComponents();
+            this.setSize(350, 290);
+            //fundo------------------------------------------------------------------------------------//
+            BufferedImage resizedImg = new BufferedImage(1280, 768, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = resizedImg.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(new ImageIcon(getClass().getResource("/rec/painel1.png")).getImage(), 0, 0, 1280, 768, null);
+            g.dispose();
+            
+            jLfundo.setIcon(new javax.swing.ImageIcon(resizedImg));
+            //-----------------------------------------------------------------------------------------//
+            
+            this.jLguiche.setText("#"+Integer.toString(guiche));
+            this.jLtipo.setText(tipo);
+            if(tipo.compareTo("Registros")==0){
+                timer.addActionListener(FilaReg);
+            }else{
+                timer.addActionListener(FilaCert);
+            }
+            timer.start();
+            MoveJanela mj = new MoveJanela(this.jLfundo);
+            jLfundo.addMouseListener(mj);
+            jLfundo.addMouseMotionListener(mj);
+            url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
+            qname = new QName("http://webservice.sistemadivulga/", "PainelService");
+            service = Service.create(url, qname);
+            s = service.getPort(server.class);            
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(MiniFrame.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Erro ao conectar no WEBSERVICE.");
         }
-        timer.start();
-        MoveJanela mj = new MoveJanela(this.jLfundo);
-        jLfundo.addMouseListener(mj);
-        jLfundo.addMouseMotionListener(mj);
     }
     
     /**
@@ -133,16 +147,8 @@ public class MiniFrame extends javax.swing.JFrame {
     public ActionListener FilaReg = (ActionEvent evt) -> {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                    QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                    Service service = Service.create(url, qname);
-                    server s = service.getPort(server.class);
-                    jLfila1.setText(String.valueOf(s.FilaRegistros()));
-                    jLatual.setText(String.valueOf(s.TotalRegistros()));
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                jLfila1.setText(String.valueOf(s.FilaRegistros()));
+                jLatual.setText(String.valueOf(s.TotalRegistros()));
             }
         });
     };
@@ -150,20 +156,12 @@ public class MiniFrame extends javax.swing.JFrame {
     public ActionListener FilaCert = (ActionEvent evt) -> {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                    QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                    Service service = Service.create(url, qname);
-                    server s = service.getPort(server.class);
-                    jLfila1.setText(String.valueOf(s.FilaCertidoes()[0]));
-                    jLfila2.setText(String.valueOf(s.FilaCertidoes()[1]));
-                    if(ultimo == 0){
-                        jLatual.setText(String.valueOf(s.TotalCertidoes()[0]));
-                    }else{
-                        jLatual.setText(String.valueOf(s.TotalCertidoes()[1]));
-                    }
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
+                jLfila1.setText(String.valueOf(s.FilaCertidoes()[0]));
+                jLfila2.setText(String.valueOf(s.FilaCertidoes()[1]));
+                if(ultimo == 0){
+                    jLatual.setText(String.valueOf(s.TotalCertidoes()[0]));
+                }else{
+                    jLatual.setText(String.valueOf(s.TotalCertidoes()[1]));
                 }
             }
         });
@@ -340,106 +338,50 @@ public class MiniFrame extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                s.PreferencialProximo2(guiche);
-                ultimo = 1;
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            s.PreferencialProximo2(guiche);
+            ultimo = 1;
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-            if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                if(ultimo == 0){
-                    if(s.FilaCertidoes()[1]>0){
-                        s.PreferencialProximo2(guiche);
-                        ultimo = 1;
-                    }else{
-                        s.CertidaoProximo2(guiche);
-                        ultimo = 0;
-                    }
+        if(!"Registros".equals(tipo)){
+            if(ultimo == 0){
+                if(s.FilaCertidoes()[1]>0){
+                    s.PreferencialProximo2(guiche);
+                    ultimo = 1;
                 }else{
                     s.CertidaoProximo2(guiche);
                     ultimo = 0;
                 }
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }else{
+                s.CertidaoProximo2(guiche);
+                ultimo = 0;
             }
         }else{
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                s.RegistrosProximo2(guiche);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }    
+            s.RegistrosProximo2(guiche);
         }
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                s.CertidaoProximo2(guiche);
-                ultimo = 0;
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            s.CertidaoProximo2(guiche);
+            ultimo = 0;
         }else{
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                s.RegistrosProximo2(guiche);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            s.RegistrosProximo2(guiche);
         }
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                if(ultimo == 0){
-                    s.RepeteCertidoes();
-                    ultimo = 0;
-                }else{
-                    s.RepetePreferencial();
-                    ultimo = 1;
-                }            
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
+            if(ultimo == 0){
+                s.RepeteCertidoes();
+                ultimo = 0;
+            }else{
+                s.RepetePreferencial();
+                ultimo = 1;
             }
         }else{
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
-                s.RepeteRegistros();
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            s.RepeteRegistros();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

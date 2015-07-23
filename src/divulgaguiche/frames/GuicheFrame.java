@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -30,6 +31,11 @@ public class GuicheFrame extends javax.swing.JFrame {
     String tipo;
     int ultimo = 0;
     public static Timer timer = new Timer(3000, null);
+    
+    public URL url;
+    public QName qname;
+    public Service service;
+    public server s;
     
     public GuicheFrame(int guiche, String tipo) {
         this.guiche = guiche;
@@ -55,22 +61,24 @@ public class GuicheFrame extends javax.swing.JFrame {
         }else{
             timer.addActionListener(FilaCert);
         }
-        timer.start(); 
+        timer.start();
+        
+        try {
+            url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Erro ao conectar no WEBSERVICE.");
+        }
+        qname = new QName("http://webservice.sistemadivulga/", "PainelService");
+        service = Service.create(url, qname);
+        s = service.getPort(server.class);
     }
     
     public ActionListener FilaReg = (ActionEvent evt) -> {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                    QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                    Service service = Service.create(url, qname);
-                    server s = service.getPort(server.class);
                     jLfila1.setText(String.valueOf(s.FilaRegistros()));
                     jLatual.setText(String.valueOf(s.TotalRegistros()));
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
             }
         });
     };
@@ -78,11 +86,6 @@ public class GuicheFrame extends javax.swing.JFrame {
     public ActionListener FilaCert = (ActionEvent evt) -> {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                    QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                    Service service = Service.create(url, qname);
-                    server s = service.getPort(server.class);
                     jLfila1.setText(String.valueOf(s.FilaCertidoes()[0]));
                     jLfila2.setText(String.valueOf(s.FilaCertidoes()[1]));
                     if(ultimo == 0){
@@ -90,9 +93,6 @@ public class GuicheFrame extends javax.swing.JFrame {
                     }else{
                         jLatual.setText(String.valueOf(s.TotalCertidoes()[1]));
                     }
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
             }
         });
     };
@@ -317,81 +317,36 @@ public class GuicheFrame extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 if(ultimo == 0){
                     s.RepeteCertidoes();
                     ultimo = 0;
                 }else{
                     s.RepetePreferencial();
                     ultimo = 1;
-                }            
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                }
         }else{
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 s.RepeteRegistros();
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 s.PreferencialProximo2(guiche);
                 ultimo = 1;
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 s.CertidaoProximo2(guiche);
                 ultimo = 0;
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }else{
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 s.RegistrosProximo2(guiche);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         if(!"Registros".equals(tipo)){
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 if(ultimo == 0){
                     if(s.FilaCertidoes()[1]>0){
                         s.PreferencialProximo2(guiche);
@@ -404,19 +359,8 @@ public class GuicheFrame extends javax.swing.JFrame {
                     s.CertidaoProximo2(guiche);
                     ultimo = 0;
                 }
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }else{
-            try {
-                URL url = new URL("http://0.0.0.0:9876/webservice.sistemadivulga?wsdl");
-                QName qname = new QName("http://webservice.sistemadivulga/", "PainelService");
-                Service service = Service.create(url, qname);
-                server s = service.getPort(server.class);
                 s.RegistrosProximo2(guiche);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(GuicheFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }    
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 
